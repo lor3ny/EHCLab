@@ -1,0 +1,1 @@
+"C:\Program Files\Intel\Power Gadget 3.6"\PowerLog3.0.exe -file results.csv -cmd 2mm_base.exe
