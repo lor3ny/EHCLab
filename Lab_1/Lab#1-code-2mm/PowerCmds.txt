@@ -1,6 +1,6 @@
 Commands used for system info:
 •	 systeminfo for CPU details (or msinfo)
-•	wmic cpu get L2CacheSize, L3CacheSize to get the sizes of caches
+•	wmic cpu get L2CacheSize, L3CacheSize (to get the sizes of caches)
 •	 powercfg to get info about the power schemes (powercfg /getActiveScheme)
 
 Commands used for actual measurements:
