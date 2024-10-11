@@ -1,8 +1,7 @@
         -:    0:Source:edge_detect.c
-        -:    0:Graph:edge_detect.gcno
-        -:    0:Data:edge_detect.gcda
+        -:    0:Graph:./edge_detect_def_cov.gcno
+        -:    0:Data:./edge_detect_def_cov.gcda
         -:    0:Runs:1
-        -:    0:Programs:1
         -:    1:/* This program detects the edges in a 256 gray-level 128 x 128 pixel image.
         -:    2:   The program relies on a 2D-convolution routine to convolve the image with
         -:    3:   kernels (Sobel operators) that expose horizontal and vertical edge
@@ -73,7 +72,7 @@
         -:   68:
         -:   69:
         -:   70:  /* Initialize image_buffer2 and image_buffer3 */
-        -:   71:  initialize(image_buffer2, image_buffer3);
+        1:   71:  initialize(image_buffer2, image_buffer3);
         -:   72:
         -:   73:
         -:   74:/* Set the values of the filter matrix to a Gaussian kernel.
@@ -81,7 +80,7 @@
         -:   76:   de-emphasize the response of some isolated points to the edge
         -:   77:   detection (Sobel) kernels. */
         -:   78: 
-        -:   79:  initcoeff1(filter);
+        1:   79:  initcoeff1(filter);
         -:   80:
         -:   81:
         -:   82:  /* Perform the Gaussian convolution. */
@@ -90,7 +89,7 @@
         -:   85:
         -:   86:  /* Set the values of the filter matrix to the vertical Sobel operator. */
         -:   87:
-        -:   88:  initcoeff2(filter);
+        1:   88:  initcoeff2(filter);
         -:   89:  
         -:   90:  /* Convolve the smoothed matrix with the vertical Sobel kernel. */
         -:   91:
@@ -98,7 +97,7 @@
         -:   93:
         -:   94:  /* Set the values of the filter matrix to the horizontal Sobel operator. */
         -:   95:
-        -:   96:  initcoeff3(filter);
+        1:   96:  initcoeff3(filter);
         -:   97:  
         -:   98:  /* Convolve the smoothed matrix with the horizontal Sobel kernel. */
         -:   99:
@@ -116,23 +115,23 @@
         -:  111:  //output_dsp(image_buffer2, N*N, 1);
         1:  112:  output_dsp(image_buffer3, N*N, 1);
         -:  113: // output_dsp(filter, K*K, 1);
-        1:  114:}
+        -:  114:}
         -:  115:
         -:  116:
         -:  117:
-    #####:  118:void initialize(int image_buffer2[N][N], int image_buffer3[N][N]) {
+        1:  118:void initialize(int image_buffer2[N][N], int image_buffer3[N][N]) {
         -:  119:     int i, j;
         -:  120:
-     1024:  121:  for (i = 0; i < N; i++) {
-  1048576:  122:    for (j = 0; j < N; j++) {
+     1025:  121:  for (i = 0; i < N; i++) {
+  1049600:  122:    for (j = 0; j < N; j++) {
   1048576:  123:       image_buffer2[i][j] = 0;
         -:  124:       //printf("address: %d\n", &image_buffer2[i][j]);
   1048576:  125:       image_buffer3[i][j] = 0;
         -:  126:     }
         -:  127:  }
-    #####:  128:}
+        1:  128:}
         -:  129:
-    #####:  130:void initcoeff1(int filter[K][K]) {
+        1:  130:void initcoeff1(int filter[K][K]) {
         1:  131:  filter[0][0] = 1;
         1:  132:  filter[0][1] = 2;
         1:  133:  filter[0][2] = 1;
@@ -142,9 +141,9 @@
         1:  137:  filter[2][0] = 1;
         1:  138:  filter[2][1] = 2;
         1:  139:  filter[2][2] = 1;
-    #####:  140:}
+        1:  140:}
         -:  141:
-    #####:  142:void initcoeff2(int filter[K][K]) {
+        1:  142:void initcoeff2(int filter[K][K]) {
         1:  143:  filter[0][0] =  1;
         1:  144:  filter[0][1] =  0;
         1:  145:  filter[0][2] = -1;
@@ -154,9 +153,9 @@
         1:  149:  filter[2][0] =  1;
         1:  150:  filter[2][1] =  0;
         1:  151:  filter[2][2] = -1;
-    #####:  152:}
+        1:  152:}
         -:  153:
-    #####:  154:void initcoeff3(int filter[K][K]) {
+        1:  154:void initcoeff3(int filter[K][K]) {
         1:  155:  filter[0][0] =  1;
         1:  156:  filter[0][1] =  2;
         1:  157:  filter[0][2] =  1;
@@ -166,7 +165,7 @@
         1:  161:  filter[2][0] = -1;
         1:  162:  filter[2][1] = -2;
         1:  163:  filter[2][2] = -1;
-    #####:  164:}
+        1:  164:}
         -:  165:
         1:  166:void combthreshold(int image_buffer1[N][N], int image_buffer2[N][N], int  image_buffer3[N][N]) {
         -:  167:
@@ -177,7 +176,7 @@
         -:  172:  int temp3;
         -:  173:
      1025:  174:  for (i = 0; i < N; i++) {
-  1048576:  175:    for (j = 0; j < N; ++j) {
+  1049600:  175:    for (j = 0; j < N; ++j) {
   1048576:  176:       temp1 = abs(image_buffer1[i][j]);
   1048576:  177:       temp2 = abs(image_buffer2[i][j]);
   1048576:  178:       temp3 = (temp1 > temp2) ? temp1 : temp2;
@@ -207,27 +206,27 @@
         -:  202:     than full amplitude values and would exhibit a "washed-out" look known as
         -:  203:     convolution edge effects. */
         -:  204:
-        -:  205:  dead_rows = K / 2;
-        -:  206:  dead_cols = K / 2;
+        3:  205:  dead_rows = K / 2;
+        3:  206:  dead_cols = K / 2;
         -:  207:
         -:  208:  /* Calculate the normalization factor of the kernel matrix. */
         -:  209:
-        -:  210:  normal_factor = 0;
+        3:  210:  normal_factor = 0;
        12:  211:  for (r = 0; r < K; r++) {
-       27:  212:    for (c = 0; c < K; c++) {
+       36:  212:    for (c = 0; c < K; c++) {
        27:  213:      normal_factor += abs(kernel[r][c]);
         -:  214:    }
         -:  215:  }
         -:  216:
         3:  217:  if (normal_factor == 0)
-        -:  218:    normal_factor = 1;
+    #####:  218:    normal_factor = 1;
         -:  219:
         -:  220:  /* Convolve the input image with the kernel. */
      3069:  221:  for (r = 0; r < N - K + 1; r++) {
   3136518:  222:    for (c = 0; c < N - K + 1; c++) {
-        -:  223:      sum = 0;
-  9400356:  224:      for (i = 0; i < K; i++) {
- 28201068:  225:        for (j = 0; j < K; j++) {
+  3133452:  223:      sum = 0;
+ 12533808:  224:      for (i = 0; i < K; i++) {
+ 37601424:  225:        for (j = 0; j < K; j++) {
  28201068:  226:          sum += input_image[r+i][c+j] * kernel[i][j];
         -:  227:        }
         -:  228:      }
