@@ -1,2 +1,4 @@
 # EHCLab
-Diocane
+
+
+Efficient Heterogeneous Computing laboratories and final project.

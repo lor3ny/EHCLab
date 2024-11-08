@@ -1,0 +1,9 @@
+# Ignore all .dat files
+*.dat
+
+# Other common file types to ignore (optional)
+*.log
+*.tmp
+node_modules/
+dist/
+*.bak
