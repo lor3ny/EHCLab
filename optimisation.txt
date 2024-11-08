@@ -1,0 +1,14 @@
+-finline-functions
+
+Consider all functions for inlining, even if they are not declared inline. The compiler heuristically decides which functions are worth integrating in this way.
+If all calls to a given function are integrated, and the function is declared static, then the function is normally not output as assembler code in its own right.
+
+Enabled at levels -O2, -O3, -Os. Also enabled by -fprofile-use and -fauto-profile.
+
+
+-fno-inline
+
+Do not expand any functions inline apart from those marked with the always_inline attribute. This is the default when not optimizing.
+Single functions can be exempted from inlining by marking them with the noinline attribute.
+
+
