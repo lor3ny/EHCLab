@@ -3,7 +3,9 @@
 
 ### Outline
 
+- Provare powerlog o trovare un'alternativa se non funziona
 - Run without optimiza
+- Creare script python per compilare con i vari flag, uno che runna 50 volte lo stesso eseguibile con profiling attivo e prende i dati dai file txt
 - Profile the performances with gprof, valgrind, perf.
 
 - Run with optimization flags
