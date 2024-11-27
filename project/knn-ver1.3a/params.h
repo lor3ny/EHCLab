@@ -16,7 +16,7 @@
 #endif
 
 #ifndef DT
-#define DT 1 // 1: double; 2: float; 3: not used for now
+#define DT 2 // 1: double; 2: float; 3: not used for now
 #endif
 
 #if DT == 1	//double
