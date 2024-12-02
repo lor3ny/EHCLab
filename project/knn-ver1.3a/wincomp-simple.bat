@@ -1,3 +1,0 @@
-gcc -Wall -D K=3 -D NUM_TRAINING_SAMPLES=12 -D NUM_TESTING_SAMPLES=5 -D NUM_FEATURES=2 -D NUM_CLASSES=2 -std=gnu99 -lm -c utils.c timer.c io.c
-gcc -Wall -D K=3 -D NUM_TRAINING_SAMPLES=12 -D NUM_TESTING_SAMPLES=5 -D NUM_FEATURES=2 -D NUM_CLASSES=2 -std=gnu99 -lm -c knn.c 
-gcc -Wall -D K=3 -D NUM_TRAINING_SAMPLES=12 -D NUM_TESTING_SAMPLES=5 -D NUM_FEATURES=2 -D NUM_CLASSES=2 -std=gnu99 -lm main.c utils.o timer.o knn.o io.o -o knn
