@@ -12,6 +12,7 @@ def runCompiler(name):
         capture_output=True,  
         text=True             
     )
+    print(result)
 
 def runGeneric(command):
     result = subprocess.run(
@@ -51,7 +52,7 @@ def ExecuteAndParse(d, numIterations, scenario):
 
                 if not stats:
                     os.remove("gmon.out")
-                    times.append(prev_line[1])
+                    times.append(float(prev_line[1]))
                     break
                 
                 if stats[0] == 'time':
@@ -88,28 +89,31 @@ def ImportData(scenario):
     runGeneric(f"cp 'scenario-{scenario}/params.h' 'src/params.h'")
 
 
-def DrawGraph(data, scenario):
+def DrawGraph(data, scenario, lat):
 
-    f, ax1 = plt.subplots(figsize=(20, 10))
+    f, ax1 = plt.subplots(figsize=(25, 10))
     df = pd.DataFrame(data)
-    sns.set_theme(style="white", context="talk")
+    sns.set_theme(style="white", context="paper")
     sns.barplot(df,x='name', y='time', hue='name', palette="light:m_r", edgecolor=".3", linewidth=.5, ax=ax1)
     
-    ax1.axhline(0, color="k", clip_on=False)
+    ax1.axhline(y=lat, color='red', linestyle='--', linewidth=1.5, label=f'Average Total Latency: {lat}')
+
+    ax1.set_ylim(0, 1.2)
     ax1.set_ylabel('Latency (s)')
     ax1.set_xlabel(f'Functions on {scenario} K-NN')
+    plt.legend()
     plt.title('Function Latencies')
     plt.tight_layout(h_pad=2)
 
     plt.savefig(f'profiling/graphs/plot_latency_{scenario}.png')
 
-    f, ax2 = plt.subplots(figsize=(20, 10))
-    sns.set_theme(style="white", context="talk")
+    f, ax2 = plt.subplots(figsize=(25, 10))
+    sns.set_theme(style="white", context="paper")
     sns.barplot(df,x='name', y='calls', hue='name', palette="light:m_r", edgecolor=".3", linewidth=.5, ax=ax2)
     
-    ax2.axhline(0, color="k", clip_on=False)
     ax2.set_ylabel('Calls Count')
     ax2.set_xlabel(f'Functions on {scenario} K-NN')
+    plt.legend()
     plt.title('Function Calls')
     plt.tight_layout(h_pad=2)
 
@@ -122,7 +126,7 @@ def DrawGraphFinal(data):
     sns.set_theme(style="white", context="talk")
     sns.barplot(df,x='scenario', y='time', hue='scenario', palette="light:m_r", edgecolor=".3", linewidth=.5, ax=ax1)
     
-    ax1.axhline(0, color="k", clip_on=False)
+    #ax1.axhline(0, color="k", clip_on=False)
     ax1.set_ylabel('Latency (s)')
     ax1.set_xlabel(f'All Scenarios K-NN')
     plt.title('Function Latencies')
@@ -185,7 +189,7 @@ def CompileAndRun(numIterations):
         total_time = ExecuteAndParse(d, numIterations, "k3")
         print("Done!")
         print("Produing graphs... ")
-        DrawGraph(d, "k3")
+        DrawGraph(d, "k3", sum(total_time)/len(total_time))
         print("Done!\n")
 
         for i in range(len(total_time)):
@@ -209,7 +213,7 @@ def CompileAndRun(numIterations):
         total_time = ExecuteAndParse(d, numIterations, "k20")
         print("Done!")
         print("Produing graphs... ")
-        DrawGraph(d, "k20")
+        DrawGraph(d, "k20", sum(total_time)/len(total_time))
         print("Done!\n")
 
         for i in range(len(total_time)):
@@ -233,7 +237,7 @@ def CompileAndRun(numIterations):
         total_time = ExecuteAndParse(d, numIterations, "g100x8x5000")
         print("Done!")
         print("Produing graphs... ")
-        DrawGraph(d, "g100x8x5000")
+        DrawGraph(d, "g100x8x5000", sum(total_time)/len(total_time))
         print("Done!\n")
 
         for i in range(len(total_time)):
@@ -257,7 +261,7 @@ def CompileAndRun(numIterations):
         total_time = ExecuteAndParse(d, numIterations, "g100x8x1000")
         print("Done!")
         print("Produing graphs... ")
-        DrawGraph(d, "g100x8x1000")
+        DrawGraph(d, "g100x8x1000", sum(total_time)/len(total_time))
         print("Done!\n")
 
         for i in range(len(total_time)):
