@@ -6,13 +6,13 @@ import seaborn as sns
 import os
 
 def runCompiler(name):
-    command = "./wincomp-gprof_"+name+".bat"
+    command = "./wincomp-o3-gprof_"+name+".bat"
     result = subprocess.run(
         ["powershell", "-Command", command],
         capture_output=True,  
         text=True             
     )
-    print(result)
+    print(result.stderr)
 
 def runGeneric(command):
     result = subprocess.run(
@@ -20,6 +20,7 @@ def runGeneric(command):
         capture_output=True,  
         text=True             
     )
+    print(result.stderr)
 
 def ExecuteAndParse(d, numIterations, scenario):
 
@@ -98,14 +99,13 @@ def DrawGraph(data, scenario, lat):
     
     ax1.axhline(y=lat, color='red', linestyle='--', linewidth=1.5, label=f'Average Total Latency: {lat}')
 
-    ax1.set_ylim(0, 1.2)
     ax1.set_ylabel('Latency (s)')
     ax1.set_xlabel(f'Functions on {scenario} K-NN')
     plt.legend()
     plt.title('Function Latencies')
     plt.tight_layout(h_pad=2)
 
-    plt.savefig(f'profiling/graphs/plot_latency_{scenario}.png')
+    plt.savefig(f'profiling/graphs/plot_latency_{scenario}_o3.png')
 
     f, ax2 = plt.subplots(figsize=(25, 10))
     sns.set_theme(style="white", context="paper")
@@ -117,7 +117,7 @@ def DrawGraph(data, scenario, lat):
     plt.title('Function Calls')
     plt.tight_layout(h_pad=2)
 
-    plt.savefig(f'profiling/graphs/plot_calls_{scenario}.png')
+    plt.savefig(f'profiling/graphs/plot_calls_{scenario}_o3.png')
 
 def DrawGraphFinal(data):
 
@@ -132,7 +132,7 @@ def DrawGraphFinal(data):
     plt.title('Function Latencies')
     plt.tight_layout(h_pad=2)
 
-    plt.savefig(f'profiling/graphs/plot_total.png')
+    plt.savefig(f'profiling/graphs/plot_total_o3.png')
     return
 
 
@@ -171,7 +171,6 @@ def CompileAndRun(numIterations):
         print("Done!\n")
         '''
         
-
         print("K3 SCENARIO")
         print("Import data... ")
         ImportData("wisdm")
@@ -220,12 +219,12 @@ def CompileAndRun(numIterations):
             runs["scenario"].append('k20')
             runs["time"].append(total_time[i])
 
-        print("g100x8x5000 SCENARIO")
+        print("g100x8x50000 SCENARIO")
         print("Import data... ")
-        ImportData("g100x8x5000")
+        ImportData("g100x8x50000")
         print("Done!")
         print("Compiling... ")
-        runCompiler("g100x8x5000")
+        runCompiler("g100x8x50000")
         print("Done!")
         d = {
             "percentage": [],
@@ -234,22 +233,23 @@ def CompileAndRun(numIterations):
             "name": []
         }
         print("Executing and Parsing... ")
-        total_time = ExecuteAndParse(d, numIterations, "g100x8x5000")
+        total_time = ExecuteAndParse(d, numIterations, "g100x8x50000")
         print("Done!")
         print("Produing graphs... ")
-        DrawGraph(d, "g100x8x5000", sum(total_time)/len(total_time))
+        DrawGraph(d, "g100x8x50000", sum(total_time)/len(total_time))
         print("Done!\n")
+    
 
         for i in range(len(total_time)):
-            runs["scenario"].append('g100x8x5000')
+            runs["scenario"].append('g100x8x50000')
             runs["time"].append(total_time[i])
 
-        print("g100x8x1000 SCENARIO")
+        print("g100x8x10000 SCENARIO")
         print("Import data... ")
-        ImportData("g100x8x1000")
+        ImportData("g100x8x10000")
         print("Done!")
         print("Compiling... ")
-        runCompiler("g100x8x1000")
+        runCompiler("g100x8x10000")
         print("Done!")
         d = {
             "percentage": [],
@@ -258,14 +258,14 @@ def CompileAndRun(numIterations):
             "name": []
         }
         print("Executing and Parsing... ")
-        total_time = ExecuteAndParse(d, numIterations, "g100x8x1000")
+        total_time = ExecuteAndParse(d, numIterations, "g100x8x10000")
         print("Done!")
         print("Produing graphs... ")
-        DrawGraph(d, "g100x8x1000", sum(total_time)/len(total_time))
+        DrawGraph(d, "g100x8x10000", sum(total_time)/len(total_time))
         print("Done!\n")
 
         for i in range(len(total_time)):
-            runs["scenario"].append('g100x8x1000')
+            runs["scenario"].append('g100x8x10000')
             runs["time"].append(total_time[i])
 
         DrawGraphFinal(runs)

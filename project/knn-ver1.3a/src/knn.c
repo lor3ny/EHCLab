@@ -8,7 +8,7 @@
 *   - v0.6, October 2023
 *	- v0.7, October 2024
 *
-*	by João MP Cardoso
+*	by Joï¿½o MP Cardoso
 *	Email: jmpc@fe.up.pt
 *
 *	SPeCS, FEUP.DEI, University of Porto, Portugal
@@ -41,9 +41,13 @@ void select_k_nearest(BestPoint *dist_points, int num_points, int k) {
     CLASS_ID_TYPE class_id_1;
     int index;
 
+
+    #pragma omp parallel for
     for(int i = 0; i < k; i++) {  // we only need the top k minimum distances
 		min_distance = dist_points[i].distance;
 		index = i;
+
+        #pragma omp parallel for
 		for(int j = i+1; j < num_points; j++) {
             if(dist_points[j].distance < min_distance) {
                 min_distance = dist_points[j].distance;
@@ -70,14 +74,16 @@ void select_k_nearest(BestPoint *dist_points, int num_points, int k) {
 void get_k_NN(Point *new_point, Point *known_points, int num_points,
 	BestPoint *best_points, int k,  int num_features) {
      
-     BestPoint dist_points[num_points];
+    BestPoint dist_points[num_points];
 
     // calculate the Euclidean distance between the Point to classify and each Point in the
     // training dataset (knowledge base)
+    #pragma omp parallel for
     for (int i = 0; i < num_points; i++) {
         DATA_TYPE distance = (DATA_TYPE) 0.0;
 
         // calculate the Euclidean distance
+        #pragma omp parallel for
         for (int j = 0; j < num_features; j++) {
             DATA_TYPE diff = (DATA_TYPE) new_point->features[j] - (DATA_TYPE) known_points[i].features[j];
             distance += diff * diff;

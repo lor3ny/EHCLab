@@ -8,7 +8,7 @@
 *	- v0.6, October 2023
 *	- v0.7, October 2024
 *
-*	by João MP Cardoso
+*	by Joï¿½o MP Cardoso
 *	Email: jmpc@fe.up.pt
 *	
 *	SPeCS, FEUP.DEI, University of Porto, Portugal
@@ -19,6 +19,7 @@
 
 #include "params.h"
 #include "types.h"
+#include <omp.h>
 
 void copy_k_nearest(BestPoint *dist_points, BestPoint *best_points, int k);
 
