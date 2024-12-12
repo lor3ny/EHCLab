@@ -15,6 +15,7 @@
 */
 
 #include <math.h>
+#include <stdlib.h>
 
 #include "knn.h"
 
@@ -35,35 +36,33 @@ void copy_k_nearest(BestPoint *dist_points, BestPoint *best_points, int k) {
 *  Get the k nearest points.
 *  This version stores the k nearest points in the first k positions of dis_point
 */
+// Qui viene fatto un sort, sembra un bubble sort. Potrebbe essere interessante applicare un'implementazione GPU o multi-thread
 void select_k_nearest(BestPoint *dist_points, int num_points, int k) {
 
     DATA_TYPE min_distance, distance_i;
     CLASS_ID_TYPE class_id_1;
     int index;
 
-
-    #pragma omp parallel for
     for(int i = 0; i < k; i++) {  // we only need the top k minimum distances
 		min_distance = dist_points[i].distance;
 		index = i;
 
-        #pragma omp parallel for
 		for(int j = i+1; j < num_points; j++) {
             if(dist_points[j].distance < min_distance) {
                 min_distance = dist_points[j].distance;
                 index = j;
             }
-      }
-      if(index != i) { //swap
-         distance_i = dist_points[index].distance;
-         class_id_1 = dist_points[index].classification_id;
+        }
+        if(index != i) { //swap
+            distance_i = dist_points[index].distance;
+            class_id_1 = dist_points[index].classification_id;
 
-         dist_points[index].distance = dist_points[i].distance;
-         dist_points[index].classification_id = dist_points[i].classification_id;
+            dist_points[index].distance = dist_points[i].distance;
+            dist_points[index].classification_id = dist_points[i].classification_id;
 
-         dist_points[i].distance = distance_i;
-         dist_points[i].classification_id = class_id_1;
-      }
+            dist_points[i].distance = distance_i;
+            dist_points[i].classification_id = class_id_1;
+        }
     }
 }
 
@@ -78,21 +77,24 @@ void get_k_NN(Point *new_point, Point *known_points, int num_points,
 
     // calculate the Euclidean distance between the Point to classify and each Point in the
     // training dataset (knowledge base)
-    #pragma omp parallel for
-    for (int i = 0; i < num_points; i++) {
-        DATA_TYPE distance = (DATA_TYPE) 0.0;
 
-        // calculate the Euclidean distance
-        #pragma omp parallel for
-        for (int j = 0; j < num_features; j++) {
-            DATA_TYPE diff = (DATA_TYPE) new_point->features[j] - (DATA_TYPE) known_points[i].features[j];
-            distance += diff * diff;
-        }
-		
-		distance = sqrt(distance);
-		
-        dist_points[i].classification_id = known_points[i].classification_id;
-        dist_points[i].distance = distance;
+    //DATA_TYPE distances[num_points*num_features];
+    DATA_TYPE* distances = (DATA_TYPE*)malloc(num_points * num_features * sizeof(DATA_TYPE));
+
+    #pragma omp parallel for
+    for (int i = 0; i < num_points*num_features; i++) {
+        int row = i / num_features; 
+        int col = i % num_features; 
+
+        DATA_TYPE diff = (DATA_TYPE) new_point->features[col] - (DATA_TYPE) known_points[row].features[col];
+        distances[i] = diff*diff;
+    }
+
+    for(int i = 0; i < num_points * num_features; i++){
+        int point = i / num_features;
+
+        dist_points[point].classification_id = known_points[point].classification_id;
+        dist_points[point].distance += distances[i];
     }
 
 	// select the k nearest Points: k first elements of dist_points
@@ -101,6 +103,8 @@ void get_k_NN(Point *new_point, Point *known_points, int num_points,
 	// copy the k first elements of dist_points to the best_points
 	// data structure
     copy_k_nearest(dist_points, best_points, k);
+
+    free(distances);
 }
 
 /*

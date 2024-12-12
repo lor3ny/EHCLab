@@ -248,7 +248,7 @@ int main() {
 
         // for now: output the inferred class of the instance
 		//printf("point %d class inferred id: %d - true class id; %d\n",i, instance_class, new_point->classification_id);
-		printf("class id: %d\n", instance_class);
+		//printf("class id: %d\n", instance_class);
 		
         // The following store the inferred class in the point structure
         // In practice and especially in streaming operation, this

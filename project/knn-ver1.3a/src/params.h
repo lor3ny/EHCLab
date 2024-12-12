@@ -3,9 +3,9 @@
 
 #include <float.h>
 
-#define NUM_TRAINING_SAMPLES 8004
+#define NUM_TRAINING_SAMPLES 40002
 
-#define NUM_TESTING_SAMPLES 1996
+#define NUM_TESTING_SAMPLES 9998
 
 #define NUM_FEATURES 100
 
@@ -27,6 +27,10 @@
 	#define DATA_TYPE float
 	#define MAX_FP_VAL FLT_MAX
 	#define MIN_FP_VAL -FLT_MAX
+#else
+	#define DATA_TYPE unknown
+	#define MAX_FP_VAL unknown
+	#define MIN_FP_VAL unknown
 #endif
 
 #if NUM_CLASSES > 128
@@ -34,6 +38,5 @@
 #else
 	#define CLASS_ID_TYPE char // consider 0..127 classes and -1 for unknown
 #endif
-
 
 #endif //KNN_PARAMS_H
