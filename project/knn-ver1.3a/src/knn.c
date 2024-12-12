@@ -75,11 +75,23 @@ void get_k_NN(Point *new_point, Point *known_points, int num_points,
      
     BestPoint dist_points[num_points];
 
-    // calculate the Euclidean distance between the Point to classify and each Point in the
-    // training dataset (knowledge base)
+    // 50000 (points) * 10 (features) * 8 (double) = 0.04 GB 
 
-    //DATA_TYPE distances[num_points*num_features];
+
+    // new_point[num_features]                  vettore colonna 
+    // known_points[num_points * num_features]  matrice punti - features
+    // dist_points[num_points * num_features]   matrice delle distanze per feature
+
+    // distances[num_points * num_features]
+    // compute delle distance con cuda
+
+    // compute della reduction con cuda (parallelizza su tutto e usa atomic adds)
+
+// calculate the Euclidean distance between the Point to classify and each Point in the
+// training dataset (knowledge base)
+
     DATA_TYPE* distances = (DATA_TYPE*)malloc(num_points * num_features * sizeof(DATA_TYPE));
+    // DATA_TYPE distances[num_points*num_features];  va memsettata a 0 dopo la malloc
 
     #pragma omp parallel for
     for (int i = 0; i < num_points*num_features; i++) {
