@@ -15,7 +15,6 @@
 */
 
 #include <math.h>
-#include <stdlib.h>
 
 #include "knn.h"
 
@@ -24,20 +23,89 @@
 *  to a data structure (best_points) with k points
 */
 void copy_k_nearest(BestPoint *dist_points, BestPoint *best_points, int k) {
-
     for(int i = 0; i < k; i++) {   // we only need the top k minimum distances
        best_points[i].classification_id = dist_points[i].classification_id;
        best_points[i].distance = dist_points[i].distance;
     }
-
 }
 
 /**
 *  Get the k nearest points.
 *  This version stores the k nearest points in the first k positions of dis_point
 */
-// Qui viene fatto un sort, sembra un bubble sort. Potrebbe essere interessante applicare un'implementazione GPU o multi-thread
+
+// Funzione per scambiare due elementi
+void swap(BestPoint *a, BestPoint *b) {
+    BestPoint temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+// Heapify per mantenere la proprietà del min-heap
+void heapify(BestPoint *dist_points, int n, int i) {
+    int smallest = i;         // Nodo corrente
+    int left = 2 * i + 1;     // Figlio sinistro
+    int right = 2 * i + 2;    // Figlio destro
+
+    // Verifica se il figlio sinistro è più piccolo
+    if (left < n && dist_points[left].distance < dist_points[smallest].distance) {
+        smallest = left;
+    }
+
+    // Verifica se il figlio destro è più piccolo
+    if (right < n && dist_points[right].distance < dist_points[smallest].distance) {
+        smallest = right;
+    }
+
+    // Se il nodo corrente non è il più piccolo, scambia e continua a heapify
+    if (smallest != i) {
+        swap(&dist_points[i], &dist_points[smallest]);
+        heapify(dist_points, n, smallest);
+    }
+}
+
+// Costruisce un min-heap
+void buildMinHeap(BestPoint *dist_points, int n) {
+    for (int i = n / 2 - 1; i >= 0; i--) {
+        heapify(dist_points, n, i);
+    }
+}
+
+// Estrai il minimo dal min-heap
+BestPoint extractMin(BestPoint *dist_points, int *n) {
+    if (*n <= 0) {
+        BestPoint empty = {0, 0};
+        return empty; // Heap vuoto
+    }
+
+    // Salva il valore minimo
+    BestPoint root = dist_points[0];
+
+    // Sostituisci la radice con l'ultimo elemento
+    dist_points[0] = dist_points[*n - 1];
+    (*n)--;
+
+    // Ripristina la proprietà del min-heap
+    heapify(dist_points, *n, 0);
+
+    return root;
+}
+
+// Funzione per selezionare i k punti più vicini
 void select_k_nearest(BestPoint *dist_points, int num_points, int k) {
+    // Crea un min-heap con tutti i punti
+    buildMinHeap(dist_points, num_points);
+
+    // Estrai i primi k elementi dal min-heap
+    //printf("I %d punti più vicini:\n", k);
+    for (int i = 0; i < k && num_points > 0; i++) {
+        BestPoint nearest = extractMin(dist_points, &num_points);
+        dist_points[i] = nearest;
+        //printf("Distanza: %f, Classe: %d\n", nearest.distance, nearest.classification_id);
+    }
+}
+
+void select_k_nearest_2(BestPoint *dist_points, int num_points, int k) {
 
     DATA_TYPE min_distance, distance_i;
     CLASS_ID_TYPE class_id_1;
@@ -47,12 +115,20 @@ void select_k_nearest(BestPoint *dist_points, int num_points, int k) {
 		min_distance = dist_points[i].distance;
 		index = i;
 
-		for(int j = i+1; j < num_points; j++) {
+
+        //#pragma omp parallel for
+        for(int j = i+1; j < num_points; j++) {
             if(dist_points[j].distance < min_distance) {
-                min_distance = dist_points[j].distance;
+                //#pragma omp critical
+                {
+                    min_distance = dist_points[j].distance;    
+                }
+                
                 index = j;
             }
         }
+
+	
         if(index != i) { //swap
             distance_i = dist_points[index].distance;
             class_id_1 = dist_points[index].classification_id;
@@ -63,7 +139,7 @@ void select_k_nearest(BestPoint *dist_points, int num_points, int k) {
             dist_points[i].distance = distance_i;
             dist_points[i].classification_id = class_id_1;
         }
-    }
+    } 
 }
 
 /*
@@ -75,48 +151,29 @@ void get_k_NN(Point *new_point, Point *known_points, int num_points,
      
     BestPoint dist_points[num_points];
 
-    // 50000 (points) * 10 (features) * 8 (double) = 0.04 GB 
-
-
-    // new_point[num_features]                  vettore colonna 
-    // known_points[num_points * num_features]  matrice punti - features
-    // dist_points[num_points * num_features]   matrice delle distanze per feature
-
-    // distances[num_points * num_features]
-    // compute delle distance con cuda
-
-    // compute della reduction con cuda (parallelizza su tutto e usa atomic adds)
-
-// calculate the Euclidean distance between the Point to classify and each Point in the
-// training dataset (knowledge base)
-
-    DATA_TYPE* distances = (DATA_TYPE*)malloc(num_points * num_features * sizeof(DATA_TYPE));
-    // DATA_TYPE distances[num_points*num_features];  va memsettata a 0 dopo la malloc
-
+    // calculate the Euclidean distance between the Point to classify and each Point in the
+    // training dataset (knowledge base)
     #pragma omp parallel for
-    for (int i = 0; i < num_points*num_features; i++) {
-        int row = i / num_features; 
-        int col = i % num_features; 
+    for (int i = 0; i < num_points; i++) {
+        DATA_TYPE distance = (DATA_TYPE) 0.0;
 
-        DATA_TYPE diff = (DATA_TYPE) new_point->features[col] - (DATA_TYPE) known_points[row].features[col];
-        distances[i] = diff*diff;
-    }
-
-    for(int i = 0; i < num_points * num_features; i++){
-        int point = i / num_features;
-
-        dist_points[point].classification_id = known_points[point].classification_id;
-        dist_points[point].distance += distances[i];
+        // calculate the Euclidean distance
+        //#pragma omp simd for
+        for (int j = 0; j < num_features; j++) {
+            DATA_TYPE diff = (DATA_TYPE) new_point->features[j] - (DATA_TYPE) known_points[i].features[j];
+            distance += diff * diff;
+        }
+		
+        dist_points[i].classification_id = known_points[i].classification_id;
+        dist_points[i].distance = distance;
     }
 
 	// select the k nearest Points: k first elements of dist_points
-    select_k_nearest(dist_points, num_points, k);
+    //select_k_nearest(dist_points, num_points, k);
 
 	// copy the k first elements of dist_points to the best_points
 	// data structure
     copy_k_nearest(dist_points, best_points, k);
-
-    free(distances);
 }
 
 /*

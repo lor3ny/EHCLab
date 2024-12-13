@@ -20,6 +20,7 @@
 #include "params.h"
 #include "types.h"
 #include <omp.h>
+#include <stdlib.h>
 
 void copy_k_nearest(BestPoint *dist_points, BestPoint *best_points, int k);
 
