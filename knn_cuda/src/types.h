@@ -14,4 +14,10 @@ typedef struct {
     DATA_TYPE distance;
 } BestPoint;
 
+typedef struct {
+    DATA_TYPE features[NUM_FEATURES];
+    CLASS_ID_TYPE classification_id;
+    DATA_TYPE distance;
+} CUDA_Point;
+
 #endif //KNN_TYPES_H

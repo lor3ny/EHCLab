@@ -21,6 +21,9 @@
 #include "types.h"
 #include <omp.h>
 #include <stdlib.h>
+#include <iostream>
+#include <cuda_runtime.h>
+
 
 void copy_k_nearest(BestPoint *dist_points, BestPoint *best_points, int k);
 
@@ -28,11 +31,14 @@ void copy_k_nearest(BestPoint *dist_points, BestPoint *best_points, int k);
 
 void select_k_nearest(BestPoint arr[], int low, int high, int k);
 
-void get_k_NN(Point *new_point, Point *known_points, int num_points, BestPoint *best_points,
-		int k,  int num_features);
+void get_k_NN(Point *new_point, Point *known_points, const int num_points, BestPoint *best_points, const int k, const int num_features);
 
-CLASS_ID_TYPE plurality_voting(int k, BestPoint *best_points, int num_classes);
+CLASS_ID_TYPE plurality_voting(int k, BestPoint *best_points, const int num_classes);
 
-CLASS_ID_TYPE knn_classifyinstance(Point *new_point, int k, int num_classes, Point *known_points, int num_points, int num_features);
+CLASS_ID_TYPE knn_classifyinstance(Point *new_point,const int k, const int num_classes, Point *known_points, int num_points, int num_features);
+
+CLASS_ID_TYPE knn_classifyinstance_CUDA(Point *new_point, const int k, const int num_classes, CUDA_Point *known_points, int num_points, int num_features);
+
+__global__ void ComputeDistances_GPU(Point *new_point, CUDA_Point* points, float* distances);
 
 #endif

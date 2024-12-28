@@ -236,7 +236,7 @@ int main() {
 		//show_point(*new_point,num_features);
 		//printf("---\n");
 		
-        CLASS_ID_TYPE instance_class = knn_classifyinstance(new_point, k, num_classes,
+        CLASS_ID_TYPE instance_class = knn_classifyinstance_GPU(new_point, k, num_classes,
                                        known_points, num_points, num_features);
 
         // to show the data associated to the point
