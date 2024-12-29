@@ -179,6 +179,7 @@ int main() {
 	#endif
 
 	#if NORMALIZE == 1 // minmax normalization
+		/*
 		DATA_TYPE min[num_features];
 		DATA_TYPE max[num_features];
 
@@ -187,7 +188,17 @@ int main() {
 
 		// normalize known points
 		minmax_normalize(min, max, num_points, known_points, num_features);
+		*/		
 
+		DATA_TYPE min[NUM_FEATURES];
+		DATA_TYPE max[NUM_FEATURES];
+
+		// determine min and max from known points
+		minmax(min, max, num_points, known_points, NUM_FEATURES);
+
+		// normalize known points
+		minmax_normalize(min, max, num_points, known_points, NUM_FEATURES);
+	
 		#if STREAMING == 0
 			// normalize new points
 			minmax_normalize(min, max, num_new_points, new_points, num_features);
@@ -236,9 +247,7 @@ int main() {
 		//show_point(*new_point,num_features);
 		//printf("---\n");
 		
-        CLASS_ID_TYPE instance_class = knn_classifyinstance_GPU(new_point, k, num_classes,
-                                       known_points, num_points, num_features);
-
+        CLASS_ID_TYPE instance_class = knn_classifyinstance_CUDA(new_point, k, num_classes, known_points, num_points, num_features);
         // to show the data associated to the point
 		//show_point(new_point,num_features);
 
