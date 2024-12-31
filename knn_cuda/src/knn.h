@@ -22,7 +22,32 @@
 #include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <cuda_runtime.h>
+
+#ifdef __CUDACC__
+    #include <cuda_runtime.h>
+
+    __global__ void ComputeDistances_CUDA(Point *new_point, Point* points, BestPoint* distances);
+
+    static void HandleError( cudaError_t err,
+                            const char *file,
+                            int line ) {
+        if (err != cudaSuccess) {
+            printf( "%s in %s at line %d\n", cudaGetErrorString( err ),
+                    file, line );
+            exit( EXIT_FAILURE );
+        }
+    }
+    #define HANDLE_ERROR( err ) (HandleError( err, __FILE__, __LINE__ ))
+
+
+    CLASS_ID_TYPE knn_classifyinstance(Point *new_point, const int k, const int num_classes, Point *known_points, const int num_points, const int num_features);
+
+#else
+
+    CLASS_ID_TYPE knn_classifyinstance(Point *new_point, const int k, const int num_classes, Point *known_points, const int num_points, const int num_features);
+
+#endif
+
 
 
 void copy_k_nearest(BestPoint *dist_points, BestPoint *best_points, int k);
@@ -34,11 +59,5 @@ void select_k_nearest(BestPoint arr[], int low, int high, int k);
 void get_k_NN(Point *new_point, Point *known_points, const int num_points, BestPoint *best_points, const int k, const int num_features);
 
 CLASS_ID_TYPE plurality_voting(int k, BestPoint *best_points, const int num_classes);
-
-CLASS_ID_TYPE knn_classifyinstance(Point *new_point,const int k, const int num_classes, Point *known_points, int num_points, int num_features);
-
-CLASS_ID_TYPE knn_classifyinstance_CUDA(Point *new_point, int k, int num_classes, Point *known_points, int num_points, const int num_features);
-
-__global__ void ComputeDistances_CUDA(Point *new_point, Point* points, float* distances);
 
 #endif

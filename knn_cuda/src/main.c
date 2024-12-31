@@ -246,8 +246,7 @@ int main() {
 		//printf("-- Point to infer:\n");
 		//show_point(*new_point,num_features);
 		//printf("---\n");
-		
-        CLASS_ID_TYPE instance_class = knn_classifyinstance_CUDA(new_point, k, num_classes, known_points, num_points, num_features);
+		CLASS_ID_TYPE instance_class = knn_classifyinstance(new_point, k, num_classes, known_points, num_points, num_features);
         // to show the data associated to the point
 		//show_point(new_point,num_features);
 
@@ -268,7 +267,6 @@ int main() {
 		new_point->classification_id = instance_class;
 
     }
-
 
 	#if TIMMING == 1
 		timer_stop(timer);
