@@ -76,16 +76,18 @@ void get_k_NN(Point *new_point, Point *known_points, int num_points,
 
     // calculate the Euclidean distance between the Point to classify and each Point in the
     // training dataset (knowledge base)
+    #pragma omp parallel for
     for (int i = 0; i < num_points; i++) {
         DATA_TYPE distance = (DATA_TYPE) 0.0;
 
         // calculate the Euclidean distance
+        #pragma omp simd
         for (int j = 0; j < num_features; j++) {
             DATA_TYPE diff = (DATA_TYPE) new_point->features[j] - (DATA_TYPE) known_points[i].features[j];
             distance += diff * diff;
         }
 		
-		distance = sqrt(distance);
+		//distance = sqrt(distance);
 		
         dist_points[i].classification_id = known_points[i].classification_id;
         dist_points[i].distance = distance;

@@ -26,7 +26,8 @@
 #ifdef __CUDACC__
     #include <cuda_runtime.h>
 
-    __global__ void ComputeDistances_CUDA(Point *new_point, Point* points, BestPoint* distances);
+    __global__ void ComputeDistances_CUDA_v1(Point *new_point, Point* points, BestPoint* distances);
+    __global__ void ComputeDistances_CUDA_v2(Point *new_point, Point* points, BestPoint* distances);
 
     static void HandleError( cudaError_t err,
                             const char *file,
@@ -54,7 +55,7 @@ void copy_k_nearest(BestPoint *dist_points, BestPoint *best_points, int k);
 
 //void select_k_nearest(BestPoint *dist_points, int num_points, int k);
 
-void select_k_nearest(BestPoint arr[], int low, int high, int k);
+void select_k_nearest(BestPoint *dist_points, int num_points, int k);
 
 void get_k_NN(Point *new_point, Point *known_points, const int num_points, BestPoint *best_points, const int k, const int num_features);
 

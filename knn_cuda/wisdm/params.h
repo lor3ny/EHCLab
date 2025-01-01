@@ -11,6 +11,8 @@
 
 #define NUM_CLASSES 6
 
+#define CUDA_VERSION 1
+
 #ifndef K
 #define K 3 // 3 or 20 for READ = 1 (some authors consider K=sqrt(NUM_TRAINING_INSTANCES) = 65
 #endif

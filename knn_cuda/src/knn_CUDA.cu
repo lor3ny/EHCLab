@@ -95,33 +95,42 @@ CLASS_ID_TYPE plurality_voting(int k, BestPoint *best_points, int num_classes) {
     return classification_id;
 }
 
+__global__ void ComputeDistances_CUDA_v1(Point *new_point, Point* points, BestPoint* distances){
 
-__global__ void ComputeDistances_CUDA(Point *new_point, Point* points, BestPoint* distances){
-
-    /*
-    int point_id = blockIdx.x;
-    int feat_id = threadIdx.x;
-
-    float diff = (float) new_point->features[feat_id] - (float) points[point_id].features[feat_id];
-    diff = diff*diff;
-    atomicAdd(&distances[point_id].distance, diff);
-    */
 
     int globalThreadPoint = threadIdx.x + blockIdx.x * blockDim.x;
+    DATA_TYPE distance = (DATA_TYPE) 0.0;
 
     for(int i = 0; i<NUM_FEATURES; i++){
-
-        float diff = (float) new_point->features[i] - (float) points[globalThreadPoint].features[i];
-        diff = diff*diff;
-
-        if(i==0)
-            distances[globalThreadPoint].distance = diff;
-        else
-            distances[globalThreadPoint].distance += diff;
+        DATA_TYPE diff = (DATA_TYPE) new_point->features[i] - (DATA_TYPE) points[globalThreadPoint].features[i];
+        distance += diff*diff;
     }
 
+    distances[globalThreadPoint].classification_id = points[globalThreadPoint].classification_id;
+    distances[globalThreadPoint].distance = distance;
 
-    //printf("Point: %d Feature: %d Starter %.6f Value: %.6f Diff %.6f\n", point_id, feat_id, new_point->features[feat_id] ,points[point_id].features[feat_id], distances[feat_id]);
+    //printf("Point: %d Diff %.6f\n", globalThreadPoint, distances[globalThreadPoint].distance);
+}
+
+
+__global__ void ComputeDistances_CUDA_v2(Point *new_point, Point* points, BestPoint* distances){
+
+
+    int point_id = blockIdx.x;
+    int feature_id = threadIdx.x;
+
+    // Each thread computes one feature's squared difference
+    if (feature_id < NUM_FEATURES) {
+        DATA_TYPE diff = (DATA_TYPE) new_point->features[feature_id] - (DATA_TYPE) points[point_id].features[feature_id];
+        atomicAdd(&distances[point_id].distance, diff * diff);
+    }
+
+    // Thread 0 writes the classification ID
+    if (threadIdx.x == 0) {
+        distances[point_id].classification_id = points[point_id].classification_id;
+    }
+
+    //printf("Point: %d Diff %.6f\n", globalThreadPoint, distances[globalThreadPoint].distance);
 }
 
 extern "C" 
@@ -130,13 +139,6 @@ CLASS_ID_TYPE knn_classifyinstance(Point *new_point, const int k, const int num_
 	// Allocate CPU memory
     BestPoint* kpoints = (BestPoint*) malloc(sizeof(BestPoint) * k); // Array with the k nearest points to the Point to classify
     BestPoint* distances = (BestPoint*) malloc(sizeof(BestPoint) * num_points);
-
-    /*
-    #pragma omp parallel for
-    for(int i = 0; i<num_points; i++){
-        distances[i].distance = 0;
-    }
-    */
     
     Point *d_kpoints;
     Point *d_points;
@@ -153,25 +155,31 @@ CLASS_ID_TYPE knn_classifyinstance(Point *new_point, const int k, const int num_
     HANDLE_ERROR(cudaMemcpy(d_points, known_points, num_points * sizeof(Point), cudaMemcpyHostToDevice));
     HANDLE_ERROR(cudaMemcpy(d_newpoint, new_point, sizeof(Point), cudaMemcpyHostToDevice));
     //HANDLE_ERROR(cudaMemcpy(d_distances, distances, num_points * sizeof(BestPoint), cudaMemcpyHostToDevice));
-
-    int num_threads = 1024;//num_features;
-    int num_blocks = num_points/num_threads; //num_points;
     
-    ComputeDistances_CUDA<<<num_blocks, num_threads>>>(d_newpoint, d_points, d_distances);
+    #if CUDA_VERSION == 1
+        int threads_per_block = 256; 
+        int num_blocks = (num_points + threads_per_block - 1) / threads_per_block;
+        ComputeDistances_CUDA_v1<<<num_blocks, threads_per_block>>>(d_newpoint, d_points, d_distances);
+    #else
+        int threads_per_block = num_features; 
+        int num_blocks = num_points;
+        ComputeDistances_CUDA_v2<<<num_blocks, threads_per_block>>>(d_newpoint, d_points, d_distances);
+    #endif
+
     cudaDeviceSynchronize();
 
     HANDLE_ERROR(cudaMemcpy(distances, d_distances, num_points * sizeof(BestPoint), cudaMemcpyDeviceToHost));
-
-    /*
-    for (int i = 0; i < num_points; i++) {
-		printf("ID = %d | distance = %e\n", i, distances[i].distance);
-    }
-    */
 
     HANDLE_ERROR(cudaFree(d_points));
     HANDLE_ERROR(cudaFree(d_newpoint));
     HANDLE_ERROR(cudaFree(d_distances));
     //HANDLE_ERROR(cudaFree(d_kpoints));
+
+    /*
+    for (int i = 0; i < num_points; i++) {
+		printf("IDdefault = %d | IDcuda = %d | dist_def = %.6f | dist_cuda = %.6f\n", dist_points[i].classification_id, distances[i].classification_id, dist_points[i].distance, distances[i].distance);
+    }
+    */
 
     select_k_nearest(distances, num_points, k);
 
