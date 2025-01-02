@@ -26,7 +26,7 @@ void copy_k_nearest(BestPoint *dist_points, BestPoint *best_points, int k);
 
 //void select_k_nearest(BestPoint *dist_points, int num_points, int k);
 
-void select_k_nearest(BestPoint arr[], int low, int high, int k);
+void select_k_nearest(BestPoint *dist_points, int num_points, int k);
 
 void get_k_NN(Point *new_point, Point *known_points, int num_points, BestPoint *best_points,
 		int k,  int num_features);
