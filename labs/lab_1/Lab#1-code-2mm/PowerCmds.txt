@@ -1,8 +1,0 @@
-Commands used for system info:
-•	 systeminfo for CPU details (or msinfo)
-•	wmic cpu get L2CacheSize, L3CacheSize (to get the sizes of caches)
-•	 powercfg to get info about the power schemes (powercfg /getActiveScheme)
-
-Commands used for actual measurements:
-•	gcc 2mm.c benchmark.c -o “name”.exe
-•	"C:\Program Files\Intel\Power Gadget 3.6"\PowerLog3.0.exe -file results.csv -cmd 2mm_base.exe
