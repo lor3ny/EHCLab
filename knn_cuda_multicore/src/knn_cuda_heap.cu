@@ -131,17 +131,15 @@ __global__ void ComputeDistances_CUDA_v1(Point *new_point, Point* points, BestPo
     distances[globalThreadPoint].classification_id = points[globalThreadPoint].classification_id;
     distances[globalThreadPoint].distance = distance;
 
-    //printf("Point: %d Diff %.6f\n", globalThreadPoint, distances[globalThreadPoint].distance);
 }
 
 
 __global__ void ComputeDistances_CUDA_v2(Point *new_point, Point* points, BestPoint* distances){
 
-
     int point_id = blockIdx.x;
     int feature_id = threadIdx.x;
 
-    // Each thread computes one feature's squared difference
+    // Each thread computes one feature's difference
     if (feature_id < NUM_FEATURES) {
         DATA_TYPE diff = (DATA_TYPE) new_point->features[feature_id] - (DATA_TYPE) points[point_id].features[feature_id];
         atomicAdd(&distances[point_id].distance, diff * diff);
@@ -152,7 +150,6 @@ __global__ void ComputeDistances_CUDA_v2(Point *new_point, Point* points, BestPo
         distances[point_id].classification_id = points[point_id].classification_id;
     }
 
-    //printf("Point: %d Diff %.6f\n", globalThreadPoint, distances[globalThreadPoint].distance);
 }
 
 extern "C" 
